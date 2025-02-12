@@ -1,113 +1,112 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Handle Login
-    document.querySelector("#exampleModal form").addEventListener("submit", function (event) {
-        event.preventDefault();
-        const loginEmail = document.getElementById("exampleInputEmail1").value;
-        const loginPassword = document.getElementById("exampleInputPassword1").value;
-
-        console.log("Login Attempt:", { email: loginEmail, password: loginPassword });
-
-        fetch("/api/Login.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Server responded with status ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(text => {
-                try {
-                    // Try to parse as JSON
-                    const data = JSON.parse(text);
-                    console.log("Server Response:", data);
-
-                    if (data.success) {
-                        // Redirect on success
-                        window.location.href = '/contacts.html';
-                    } else {
-                        alert(data.message); // Show error TODO: fix this
-                    }
-                } catch (error) {
-                    console.error("Failed to parse JSON:", error);
-                    alert("An error occurred. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred. Please try again.");
-            });
-
+// API Calls Module
+const loginUser = async (email, password) => {
+    const response = await fetch("/api/Login.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
     });
 
-    document.querySelector("#SignupModal form").addEventListener("submit", async function (event) {
-        event.preventDefault();
+    if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+    }
 
-        const signupEmail = document.getElementById("SignupModalEmail").value;
-        const signupPassword = document.getElementById("SignupModalPassword").value;
-        const errorDiv = document.getElementById("servererror");
+    const text = await response.text();
+    let data;
 
-        console.log("Signup Attempt:", { email: signupEmail, password: signupPassword });
+    try {
+        data = JSON.parse(text);
+    } catch {
+        throw new Error("Failed to parse JSON");
+    }
 
-        async function handleSignup() {
-            try {
-                const response = await fetch("/api/Register.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: signupEmail,
-                        password: signupPassword,
-                        FirstName: 'Test',
-                        LastName: 'Test'
-                    }),
-                });
+    return data;
+};
 
-                const text = await response.text();
+const signupUser = async (email, password) => {
+    const response = await fetch("/api/Register.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            email,
+            password,
+            //TO DO: ?
+            FirstName: 'Test',
+            LastName: 'Test'
+        }),
+    });
 
-                let data;
-                //TODO revise
-                try {
-                    // Try parsing JSON
-                    data = JSON.parse(text);
-                } catch {
-                    // If parsing fails, treat as plain text
-                    data = { message: text };
-                }
+    const text = await response.text();
+    let data;
 
-                if (!response.ok) {
-                    console.log("Server Error Response:", data);
-                    errorDiv.textContent = data.message || `Error: ${response.statusText}`;
-                    errorDiv.hidden = false; // Show error
-                    throw new Error(data.message || `Server responded with status ${response.status}`);
-                }
+    try {
+        data = JSON.parse(text);
+    } catch {
+        data = { message: text };
+    }
 
+    if (!response.ok) {
+        throw new Error(data.message || `Server responded with status ${response.status}`);
+    }
 
-                try {
-                    // Try to parse the text as JSON
-                    const data = JSON.parse(text);
-                    console.log("Server Response:", data);
+    return data;
+};
 
-                    if (data.success) {
-                        // Redirect on success
-                        window.location.href = '/contacts.html';
-                    } else {
-                        errorDiv.textContent = data.message;
-                        errorDiv.hidden = false;
-                    }
-                } catch (error) {
-                    console.error("Failed to parse JSON:", error);
-                    throw new Error("Invalid server response format.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                errorDiv.textContent = error.message;
-                errorDiv.hidden = false;
-            }
+// UI Update Module
+const showErrorMessage = (message, elementId) => {
+    const errorDiv = document.getElementById(elementId);
+    errorDiv.textContent = message;
+    errorDiv.hidden = false;
+};
+
+const redirectToContacts = () => {
+    window.location.href = '/contacts.html';
+};
+
+// Event Handlers
+const handleLogin = async (event) => {
+    event.preventDefault();
+    const loginEmail = document.getElementById("exampleInputEmail1").value;
+    const loginPassword = document.getElementById("exampleInputPassword1").value;
+
+    console.log("Login Attempt:", { email: loginEmail, password: loginPassword });
+
+    try {
+        const data = await loginUser(loginEmail, loginPassword);
+
+        if (data.success) {
+            redirectToContacts();
+        } else {
+            alert(data.message); // To be improved later
         }
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("An error occurred. Please try again.");
+    }
+};
 
-        await handleSignup();
-    });
+const handleSignup = async (event) => {
+    event.preventDefault();
+    const signupEmail = document.getElementById("SignupModalEmail").value;
+    const signupPassword = document.getElementById("SignupModalPassword").value;
 
+    console.log("Signup Attempt:", { email: signupEmail, password: signupPassword });
+
+    try {
+        const data = await signupUser(signupEmail, signupPassword);
+
+        if (data.success) {
+            redirectToContacts();
+        } else {
+            showErrorMessage(data.message, "servererror");
+        }
+    } catch (error) {
+        console.error("Signup Error:", error);
+        showErrorMessage(error.message, "servererror");
+    }
+};
+
+// Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#exampleModal form").addEventListener("submit", handleLogin);
+    document.querySelector("#SignupModal form").addEventListener("submit", handleSignup);
 });
