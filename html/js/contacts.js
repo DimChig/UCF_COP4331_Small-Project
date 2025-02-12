@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const noContactsMessage = document.getElementById("no-contacts-message");
 
     try {
-        const response = await fetch(`/api/getContactsController.php?user_id=${userId}`);
+        const response = await fetch(`/api/getAllContacts.php?user_id=${userId}`);
         const data = await response.json();
 
         if (!data.success) {
