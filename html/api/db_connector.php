@@ -10,7 +10,7 @@ $db_port = 3306;
 // Create connection using MySQLi with error handling
 $conn = new mysqli($db_server, $db_user, $db_pass, $db_name, $db_port);
 
-// Check connection
+// Check connection REMOVE DURING IMPLEMENTATION
 if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error);
 } else {
