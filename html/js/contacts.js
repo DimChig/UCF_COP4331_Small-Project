@@ -68,10 +68,33 @@ const loadContacts = async () => {
     }
 };
 
+
+const handleUpdate = async (event) => {
+    event.preventDefault();
+    //change these to values from your modal
+    const loginEmail = document.getElementById("exampleInputEmail1").value;
+    const loginPassword = document.getElementById("exampleInputPassword1").value;
+
+    console.log("Login Attempt:", { email: loginEmail, password: loginPassword });
+
+    try {
+        const data = await loginUser(loginEmail, loginPassword);
+
+        if (data.success) {
+            redirectToContacts();
+        } else {
+            alert(data.message); // To be improved later
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("An error occurred. Please try again.");
+    }
+};
+
 // Event Listeners
 const initializeEventListeners = () => {
     document.addEventListener("DOMContentLoaded", loadContacts);
-
+    document.querySelector("#addModal form").addEventListener("submit", handleUpdate);
     //TODO:  Add more listeners here, for delete/edit create buttons
 };
 
