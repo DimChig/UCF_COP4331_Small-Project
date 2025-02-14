@@ -55,6 +55,30 @@ const showErrorMessage = (message, elementId) => {
     errorDiv.classList.remove("d-none");
 };
 
+// API Calls Module
+const addContact = async (fname, lname, phone, email) => {
+    const response = await fetch("/api/someEndpoint.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fname, lname, phone, email }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const text = await response.text();
+    let data;
+
+    try {
+        data = JSON.parse(text);
+    } catch {
+        throw new Error("Failed to parse JSON");
+    }
+
+    return data;
+};
+
 // Event Handlers
 const loadContacts = async () => {
     const userId = 1; // Placeholder for the user ID
@@ -69,16 +93,18 @@ const loadContacts = async () => {
 };
 
 
-const handleUpdate = async (event) => {
+const handleAddContact = async (event) => {
     event.preventDefault();
-    //change these to values from your modal
-    const loginEmail = document.getElementById("exampleInputEmail1").value;
-    const loginPassword = document.getElementById("exampleInputPassword1").value;
 
-    console.log("Login Attempt:", { email: loginEmail, password: loginPassword });
+    const fname = document.getElementById("first-name").value;
+    const lname = document.getElementById("last-name").value;
+    const phone = document.getElementById("phone-number").value;
+    const email = document.getElementById("email").value;
+
+    console.log("Update Attempt:", { fname: fname, lname: lname, phone: phone, email: email });
 
     try {
-        const data = await loginUser(loginEmail, loginPassword);
+        const data = await addContact(loginEmail, loginPassword);
 
         if (data.success) {
             redirectToContacts();
@@ -86,7 +112,7 @@ const handleUpdate = async (event) => {
             alert(data.message); // To be improved later
         }
     } catch (error) {
-        console.error("Login Error:", error);
+        console.error("Update Contact Error:", error);
         alert("An error occurred. Please try again.");
     }
 };
@@ -94,7 +120,7 @@ const handleUpdate = async (event) => {
 // Event Listeners
 const initializeEventListeners = () => {
     document.addEventListener("DOMContentLoaded", loadContacts);
-    document.querySelector("#addModal form").addEventListener("submit", handleUpdate);
+    document.querySelector("#addModal form").addEventListener("submit", handleAddContact);
     //TODO:  Add more listeners here, for delete/edit create buttons
 };
 
