@@ -14,8 +14,8 @@ function sessionLogin(userId) {
     console.log(retrieveSession());
 }
 
-function sessionLogout() {
-    localStorage.setItem(localStorageSessionKey, null);
+function sessionLogout() {    
+    localStorage.removeItem(localStorageSessionKey);
 }
 
 function retrieveSession() {    

@@ -31,6 +31,11 @@ body {
     width: auto;
 }
 
+#logout:hover {
+    background-color: #277cf9;   
+    border-color: #00000000;
+}
+
 .avatar {
     min-width: 30px; /* Set width */
     max-width: 30px;

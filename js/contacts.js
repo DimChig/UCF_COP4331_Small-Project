@@ -147,9 +147,11 @@ const addContact = async (fname, lname, phone, email) => {
 
 // Event Handlers
 const loadContacts = async () => {
-    const session = retrieveSession();
-    console.log(session);
-    if (!session || !session.userId) return;
+    const session = retrieveSession();    
+    if (!session || !session.userId) {
+        window.location.href = "/";
+        return;
+    }
 
     const userId = session.userId;    
 
@@ -195,3 +197,9 @@ const initializeEventListeners = () => {
 
 // Initialize all event listeners
 initializeEventListeners();
+
+
+document.getElementById("logout").addEventListener("click", function() {
+    sessionLogout();
+    window.location.href = "/";
+});
