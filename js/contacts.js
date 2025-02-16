@@ -64,6 +64,7 @@ function formatTimestamp(timestamp) {
 
 // UI Update Module
 const renderContacts = (contacts) => {
+    const tableLayout = document.getElementById("contacts-table-layout");
     const tableBody = document.getElementById("contacts-table-body");
     const noContactsMessage = document.getElementById("no-contacts-message");
 
@@ -71,10 +72,11 @@ const renderContacts = (contacts) => {
     tableBody.innerHTML = '';
 
     //hide/add container with " No Contacts Message"
-    if (contacts.length === 0) {
+    if (contacts.length === 0) {        
         noContactsMessage.classList.remove("d-none");
         return;
     } 
+    tableLayout.classList.remove("d-none");
     noContactsMessage.classList.add("d-none");
 
     //buttons
@@ -145,8 +147,11 @@ const addContact = async (fname, lname, phone, email) => {
 
 // Event Handlers
 const loadContacts = async () => {
-    const userId = 1; // Placeholder for the user ID
-    const noContactsMessage = document.getElementById("no-contacts-message");
+    const session = retrieveSession();
+    console.log(session);
+    if (!session || !session.userId) return;
+
+    const userId = session.userId;    
 
     try {
         const contacts = await fetchContacts(userId);

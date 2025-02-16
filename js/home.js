@@ -40,6 +40,7 @@ const signupUser = async (login, password) => {
     return await response.json(); 
 };
 
+
 // UI Update Module
 const showErrorMessage = (message, elementId) => {
     const errorDiv = document.getElementById(elementId);
@@ -107,10 +108,9 @@ const handleLogin = async (event) => {
     try {
         const data = await loginUser(login, password);
 
-        if (data.userId && data.error == null) {
-            //TODO: save data.userId to cookies
+        if (data.userId && data.error == null) {            
+            sessionLogin(data.userId);
             redirectToContacts();
-
         } else if (data.error) {
             showErrorMessage(data.error, "SigninModalError");
         } 
@@ -141,9 +141,8 @@ const handleSignup = async (event) => {
         const data = await signupUser(login, password);
 
         if (data.userId && data.error == null) {
-            //TODO: save data.userId to cookies
+            sessionLogin(data.userId);
             redirectToContacts();
-
         } else if (data.error) {
             showErrorMessage(data.error, "SignupModalError");
         }
