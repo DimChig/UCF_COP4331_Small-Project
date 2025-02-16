@@ -27,9 +27,6 @@ const signupUser = async (login, password) => {
         body: JSON.stringify({
             "login": login,
             "password": password,
-            //TO DO: ?
-            "firstName": firstName,
-            "lastName": lastName
         }),
     });
 
