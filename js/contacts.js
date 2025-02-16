@@ -20,19 +20,30 @@ const fetchContacts = async (userId) => {
     }
 };
 
-function getAvatarColor(contactName) {
-    // Create an array of 10 distinct colors
-    const colors = ["#ff63b8", "#fa903e", "#5bb974", "#fcc934", "#4ecde6", "#af5cf7",];
+function getAvatarColor(contactName) {        
+    const colors = [
+        "#ee675c", //red,
+        "#fa903e", //orange,
+        "#fcc934", //yellow,
+        "#5bb974", //green
+        "#4ecde6", //blue
+        "#af5cf7", //purple
+        "#ff63b8", //pink
+    ]
 
-    // Hashing function using a bitwise XOR & prime multiplication
-    let hash = 0;
+    // Fowler–Noll–Vo (FNV-1a) hashing with better distribution
+    let hash = 997525853; // Large prime
     for (let i = 0; i < contactName.length; i++) {
-        hash = (hash ^ contactName.charCodeAt(i)) * 16777619;
+        hash ^= contactName.charCodeAt(i);
+        hash *= 16777619;
     }
 
-    // Return color            
-    return colors[Math.abs(hash) % colors.length];
+    // Ensure hash is always positive and evenly distributed
+    hash = (hash >>> 0) % colors.length;
+
+    return colors[hash];
 }
+
 
 function formatPhoneNumber(phoneNumber) {
     // Remove the country code (+1) if present
