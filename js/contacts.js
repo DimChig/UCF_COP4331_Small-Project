@@ -116,7 +116,7 @@ const renderContacts = (contacts) => {
             <td scope="row">${index + 1}</td>
             <td>${avatarAndName}</td>
             <td>${formatPhoneNumber(contact.phoneNumber)}</td>
-            <td>${contact.email ?? ""}</td>
+            <td>${contact.email ? `<a href="mailto:${contact.email}">${contact.email}</a>` : ""}</td>
             <td>${contact.dateCreated ? formatTimestamp(contact.dateCreated) : ""}</td>
             <td><div class="d-flex">${updateButton}${deleteButton}</div></td>            
         `;

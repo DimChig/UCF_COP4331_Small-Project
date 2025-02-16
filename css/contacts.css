@@ -7,6 +7,7 @@ body {
     justify-content: center;
     place-items: center;
     overflow: hidden;
+    font-family: 'Open Sans', sans-serif;
 }
 
 #tableContainer {
@@ -54,6 +55,12 @@ body {
     30% { transform: rotate(10deg); }
     60% { transform: rotate(-10deg); }
     100% { transform: rotate(0deg); }
+}
+
+table a {
+    text-decoration: none;
+    color: inherit;
+    transition: 0.2s;
 }
 
 .avatar {
