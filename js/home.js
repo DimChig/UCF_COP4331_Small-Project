@@ -25,16 +25,20 @@ const loginUser = async (login, password) => {
     return data;
 };
 
-const signupUser = async (email, password) => {
+const signupUser = async (login, password) => {
+
+    let firstName = 'Test1';
+    let lastName = 'Test2';
+
     const response = await fetch("/api/Register.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            email,
-            password,
+            "login": login,
+            "password": password,
             //TO DO: ?
-            FirstName: 'Test',
-            LastName: 'Test'
+            "firstName": firstName,
+            "lastName": lastName
         }),
     });
 
@@ -89,13 +93,13 @@ const handleLogin = async (event) => {
 
 const handleSignup = async (event) => {
     event.preventDefault();
-    const signupEmail = document.getElementById("SignupModalEmail").value;
-    const signupPassword = document.getElementById("SignupModalPassword").value;
+    const login= document.getElementById("SignupModalEmail").value;
+    const password = document.getElementById("SignupModalPassword").value;
 
-    console.log("Signup Attempt:", { email: signupEmail, password: signupPassword });
+    console.log("Signup Attempt:", { login: login, password: password });
 
     try {
-        const data = await signupUser(signupEmail, signupPassword);
+        const data = await signupUser(login, password);
 
         if (data.success) {
             redirectToContacts();
