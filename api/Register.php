@@ -48,6 +48,11 @@ if (!$newLogin || !$newPassword) {
 // create a connection with the database (FIX LATER, for now, its my personal db)
 require_once __DIR__ . "/db_connector.php";
 
+// Check connection
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+
 // check whether or not the connection to the database was successful
 // if not, return an error
 if ($conn->connect_error) {
