@@ -30,3 +30,11 @@ a, .btn-link {
 .modal-footer {
     border-top: none;
 }
+
+.password-eye {
+    width: 35px;
+    color: #ced4da;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+}
