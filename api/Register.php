@@ -37,16 +37,16 @@ if (!$inData) {
 }
 
 // define the values we sent in
-$newEmail = isset($inData["email"]) ? $inData["email"] : null;
+$newLogin = isset($inData["login"]) ? $inData["login"] : null;
 $newPassword = isset($inData["password"]) ? $inData["password"] : null;
 
 // check if required fields are missing
-if (!$newEmail || !$newPassword) {
-    returnWithError("Missing required fields: email and password");
+if (!$newLogin || !$newPassword) {
+    returnWithError("Missing required fields: login and password");
 }
 
 // create a connection with the database (FIX LATER, for now, its my personal db)
-$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "smallProjectTest");
+require_once __DIR__ . "/db_connector.php";
 
 // check whether or not the connection to the database was successful
 // if not, return an error
@@ -59,7 +59,7 @@ else {
     // set up the line to send
     $statement = $conn->prepare("INSERT INTO Users (Login, Password) VALUES(?, ?)");
     // fill in the line with our user's info
-    $statement->bind_param("ss", $newEmail, $newPassword);
+    $statement->bind_param("ss", $newLogin, $newPassword);
 
     // execute the line and check if insertion was successful
     if ($statement->execute()) {
