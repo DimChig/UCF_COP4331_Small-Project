@@ -46,7 +46,7 @@ require_once __DIR__ . "/db_connector.php";
 
 // Check connection
 if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+    returnWithError("Database connection failed: " . $conn->connect_error);
 }
 
 // check if connection is successful or not
