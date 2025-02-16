@@ -91,8 +91,8 @@ const renderContacts = (contacts) => {
     noContactsMessage.classList.add("d-none");
 
     //buttons
-    const updateButton = '<button type="button" class="btn text-primary"><i class="fa fa-gear" aria-hidden="true"></i></button>';
-    const deleteButton = '<button type="button" class="btn text-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+    const updateButton = '<button type="button" class="btn-update btn text-primary"><i class="fa fa-gear" aria-hidden="true"></i></button>';
+    const deleteButton = '<button type="button" class="btn-delete btn text-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>';
 
     //loop over contacts to create table rows
     contacts.forEach((contact, index) => {

@@ -36,6 +36,26 @@ body {
     border-color: #00000000;
 }
 
+.btn-update i, .btn-delete i {
+    transition: 0.5s ease-in-out;
+}
+.btn-update:hover i {
+    color: #277cf9;
+    transform: rotate(90deg);
+}
+
+.btn-delete:hover i {
+    color: #ff0000;
+    animation: shake-rotate 0.5s ease-in-out 1; /* Runs once */
+}
+
+@keyframes shake-rotate {
+    0% { transform: rotate(0deg); }
+    30% { transform: rotate(10deg); }
+    60% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+
 .avatar {
     min-width: 30px; /* Set width */
     max-width: 30px;
