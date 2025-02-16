@@ -7,11 +7,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
-// get JSON input
-function getRequestInfo() {
-    return json_decode(file_get_contents('php://input'), true);
-}
-
 // send JSON response
 function sendObjectAsJson($obj) {
     echo json_encode($obj);
@@ -25,12 +20,8 @@ function returnWithError($err) {
 }
 
 
-// get userId from either GET request or cookies
-//$userID = isset($_GET["user_id"]) ? intval($_GET["user_id"]) : null;
-$inData = getRequestInfo();
-
-// define values from user input
-$userID = $inData["userId"] ?? null;
+// get userId from either GET request query
+$userID = isset($_GET["userId"]) ? intval($_GET["userId"]) : null;
 
 // validate that userId exists
 if (!$userID) {

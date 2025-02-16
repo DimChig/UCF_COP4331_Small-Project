@@ -1,14 +1,19 @@
 // API Calls Module
 const fetchContacts = async (userId) => {
     try {
-        const response = await fetch(`/api/getAllContacts.php?user_id=${userId}`);
-        const data = await response.json();
+        const response = await fetch(`/api/getAllContacts.php?userId=${userId}`);
 
-        if (!data.success) {
-            throw new Error(data.message || "Unknown error");
+        if (!response.ok) {
+            throw new Error(`Server responded with status ${response.status}`);
         }
 
-        return data.contacts;
+        const data = await response.json();        
+
+        if (data.error) {
+            throw new Error(data.error || "Unknown error");
+        }
+
+        return data.results;
     } catch (error) {
         console.error("Error fetching contacts:", error);
         throw error;
@@ -33,12 +38,14 @@ const renderContacts = (contacts) => {
         contacts.forEach((contact, index) => {
             const row = document.createElement("tr");
 
+            console.log(contact);
+
             //that speak for itself
             row.innerHTML = `
                 <th scope="row">${index + 1}</th>
-                <td>${contact.name}</td>
-                <td>${contact.number}</td>
-                <td>${contact.email}</td>
+                <td>${contact.firstName + " " + contact.lastName}</td>
+                <td>${contact.phoneNumber}</td>
+                <td>${contact.email ?? "-"}</td>
                 <td><button type="button" class="btn btn-warning mx-1">✏ Update</button></td>
                 <td><button type="button" class="btn btn-danger mx-1">🗑 Delete</button></td>
             `;
