@@ -1,6 +1,7 @@
 body {
     /* background-color: #f8f9fa; */
     background-image: url('../images/background.jpg');
+    background-size: cover;
 }
 
 .modal-content {
