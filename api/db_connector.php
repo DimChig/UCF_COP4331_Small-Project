@@ -1,5 +1,5 @@
 <?php
-
+// testing
 // Database connection settings
 $db_server = "con-mng.cmtzc.xyz";
 $db_user = "root";
