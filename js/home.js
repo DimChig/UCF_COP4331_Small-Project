@@ -1,9 +1,12 @@
 // API Calls Module
-const loginUser = async (email, password) => {
+const loginUser = async (login, password) => {
     const response = await fetch("/api/Login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+            "login": login, 
+            "password": password 
+        }),
     });
 
     if (!response.ok) {
@@ -65,13 +68,13 @@ const redirectToContacts = () => {
 // Event Handlers
 const handleLogin = async (event) => {
     event.preventDefault();
-    const loginEmail = document.getElementById("exampleInputEmail1").value;
-    const loginPassword = document.getElementById("exampleInputPassword1").value;
+    const login = document.getElementById("exampleInputEmail1").value;
+    const password = document.getElementById("exampleInputPassword1").value;
 
-    console.log("Login Attempt:", { email: loginEmail, password: loginPassword });
+    console.log("Login Attempt:", { login: login, password: password });
 
     try {
-        const data = await loginUser(loginEmail, loginPassword);
+        const data = await loginUser(login, password);
 
         if (data.success) {
             redirectToContacts();
