@@ -20,6 +20,48 @@ const fetchContacts = async (userId) => {
     }
 };
 
+function getAvatarColor(contactName) {
+    // Create an array of 10 distinct colors
+    const colors = ["#ff63b8", "#fa903e", "#5bb974", "#fcc934", "#4ecde6", "#af5cf7",];
+
+    // Hashing function using a bitwise XOR & prime multiplication
+    let hash = 0;
+    for (let i = 0; i < contactName.length; i++) {
+        hash = (hash ^ contactName.charCodeAt(i)) * 16777619;
+    }
+
+    // Return color            
+    return colors[Math.abs(hash) % colors.length];
+}
+
+function formatPhoneNumber(phoneNumber) {
+    // Remove the country code (+1) if present
+    let cleaned = phoneNumber.replace(/^(\+1)/, "");
+
+    // Ensure it only contains digits
+    cleaned = cleaned.replace(/\D/g, "");
+
+    // Format as XXX-XXX-XXXX
+    if (cleaned.length === 10) {
+        return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    } else {
+        return phoneNumber; // Return original if format doesn't match
+    }
+}
+
+function formatTimestamp(timestamp) {
+    // Convert the input string into a Date object
+    const date = new Date(timestamp);
+
+    // Extract month, day, and year
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+
+    // Format as MM/dd/yyyy
+    return `${month}/${day}/${year}`;
+}
+
 // UI Update Module
 const renderContacts = (contacts) => {
     const tableBody = document.getElementById("contacts-table-body");
@@ -31,28 +73,43 @@ const renderContacts = (contacts) => {
     //hide/add container with " No Contacts Message"
     if (contacts.length === 0) {
         noContactsMessage.classList.remove("d-none");
-    } else {
-        noContactsMessage.classList.add("d-none");
+        return;
+    } 
+    noContactsMessage.classList.add("d-none");
 
-        //loop over contacts to create table rows
-        contacts.forEach((contact, index) => {
-            const row = document.createElement("tr");
+    //buttons
+    const updateButton = '<button type="button" class="btn text-primary"><i class="fa fa-gear" aria-hidden="true"></i></button>';
+    const deleteButton = '<button type="button" class="btn text-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>';
 
-            console.log(contact);
+    //loop over contacts to create table rows
+    contacts.forEach((contact, index) => {
+        const row = document.createElement("tr");
 
-            //that speak for itself
-            row.innerHTML = `
-                <th scope="row">${index + 1}</th>
-                <td>${contact.firstName + " " + contact.lastName}</td>
-                <td>${contact.phoneNumber}</td>
-                <td>${contact.email ?? "-"}</td>
-                <td><button type="button" class="btn btn-warning mx-1">✏ Update</button></td>
-                <td><button type="button" class="btn btn-danger mx-1">🗑 Delete</button></td>
-            `;
-            //inject generated html to the table element
-            tableBody.appendChild(row);
-        });
-    }
+        console.log(contact);
+
+        const name = contact.firstName + " " + contact.lastName;
+        const initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
+
+        const avatarAndName = 
+        `<div class="d-flex align-items-center">
+            <div class="avatar me-2" style="background-color: ${getAvatarColor(name)}!important">
+                ${initials}
+            </div>
+            ${name}
+        </div>`;
+
+        //that speak for itself
+        row.innerHTML = `
+            <td scope="row">${index + 1}</td>
+            <td>${avatarAndName}</td>
+            <td>${formatPhoneNumber(contact.phoneNumber)}</td>
+            <td>${contact.email ?? ""}</td>
+            <td>${contact.dateCreated ? formatTimestamp(contact.dateCreated) : ""}</td>
+            <td><div class="d-flex">${updateButton}${deleteButton}</div></td>            
+        `;
+        //inject generated html to the table element
+        tableBody.appendChild(row);
+    });
 };
 
 //handle errors, that needs to be tweaked I think maybe not not sure
