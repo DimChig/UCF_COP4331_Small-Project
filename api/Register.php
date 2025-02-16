@@ -7,20 +7,23 @@ ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
 // send json response
-function sendResultInfoAsJson($obj) {
+function sendObjectAsJson($obj) {
     header('Content-Type: application/json');
     echo json_encode($obj);
     exit();
 }
 
 // returns with error if necessary
-function returnWithError($err) {
-    sendResultInfoAsJson(["success" => false, "message" => $err]);
+function returnData($userId, $err) {
+    sendObjectAsJson(["userId" => $userId, "error" => $err]);
 }
 
-// return success response (but false so that the user can log in with their new info)
-function returnWithInfo($message) {
-    sendResultInfoAsJson(["success" => false, "message" => $message]);
+function returnSuccess($userId) {
+    returnData($userId, null);
+}
+
+function returnWithError($err) {
+    returnData(null, $err);
 }
 
 // get data from js request
@@ -66,11 +69,17 @@ else {
     // fill in the line with our user's info
     $statement->bind_param("ss", $newLogin, $newPassword);
 
-    // execute the line and check if insertion was successful
+    // execute the statement
     if ($statement->execute()) {
-        returnWithInfo("User registered successfully!");
+        $userId = $conn->insert_id;
+        returnSuccess($userId);
     } else {
-        returnWithError("Error registering user: " . $conn->error);
+        // check for duplicate entry error (error code 1062)
+        if ($conn->errno === 1062) {
+            returnWithError("User with the same login already exists!");
+        } else {
+            returnWithError("Error registering user: " . $conn->error);
+        }
     }
 
     // close the statement when finished

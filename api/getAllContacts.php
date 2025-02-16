@@ -9,6 +9,7 @@ header("Content-Type: application/json");
 
 // send JSON response
 function sendObjectAsJson($obj) {
+    header('Content-Type: application/json');
     echo json_encode($obj);
     exit();
 }

@@ -13,20 +13,22 @@ function getRequestInfo() {
 }
 
 // send JSON response
-function sendResultInfoAsJson($obj) {
+function sendObjectAsJson($obj) {
     header('Content-Type: application/json');
     echo json_encode($obj);
     exit();
 }
 
-// return error response
-function returnWithError($err) {
-    sendResultInfoAsJson(["success" => false, "message" => $err]);
+function returnData($userId, $err) {
+    sendObjectAsJson(["userId" => $userId, "error" => $err]);
 }
 
-// return info as json
-function returnWithInfo($id, $login) {
-    sendResultInfoAsJson(["success" => true, "id" => $id, "login" => $login]);
+function returnSuccess($userId) {
+    returnData($userId, null);
+}
+
+function returnWithError($err) {
+    returnData(null, $err);
 }
 
 // store user input data
@@ -49,30 +51,17 @@ if ($conn->connect_error) {
     returnWithError("Database connection failed: " . $conn->connect_error);
 }
 
-// check if connection is successful or not
-if ($conn->connect_error) {
-    returnWithError("Database connection failed: " . $conn->connect_error);
-}
-
 // if connection is successful, find user in the database
-$stmt = $conn->prepare("SELECT ID, Password FROM Users WHERE Login=?");
-$stmt->bind_param("s", $login);
+$stmt = $conn->prepare("SELECT ID FROM Users WHERE Login = ? AND Password = ?");
+$stmt->bind_param("ss", $login, $password);
 $stmt->execute();
 $result = $stmt->get_result();
 
 // check if the returned password matches the one the user sent in
 if ($row = $result->fetch_assoc()) {
-        if ($password === $row["Password"]) {
-                returnWithInfo($row["ID"], $login);
-        }
-        // otherwise, tell the user they used the incorrect password
-        else {
-                returnWithError("Incorrect password");
-        }
-}
-// otherwise, tell the user their login is not associated with an account
-else {
-        returnWithError("No records found for this login");
+    returnSuccess($row["ID"]);
+} else {
+    returnWithError("Login or password is incorrect!");
 }
 
 // close connections
