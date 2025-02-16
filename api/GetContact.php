@@ -60,7 +60,7 @@ else {
             "email" => $row["Email"],
             "dateCreated" => "DateCreated"
         ];
-        sendObjectAsJson(["result" => $contact, "error" => null]);
+        sendObjectAsJson(["data" => $contact, "error" => null]);
     } else {
         returnWithError("No contact found for this user.");
     }
