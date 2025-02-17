@@ -52,7 +52,7 @@ if ($conn->connect_error) {
 }
 
 // if connection is successful, find user in the database
-$stmt = $conn->prepare("SELECT ID FROM Users WHERE Login = ? AND Password = ?");
+$stmt = $conn->prepare("SELECT ID FROM users WHERE Login = ? AND Password = ?");
 $stmt->bind_param("ss", $login, $password);
 $stmt->execute();
 $result = $stmt->get_result();

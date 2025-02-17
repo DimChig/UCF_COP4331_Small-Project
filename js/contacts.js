@@ -7,7 +7,7 @@ const fetchContacts = async () => {
     }
 
     try {                
-        const response = await fetch(`/api/getAllContacts.php?userId=${session.userId}`);
+        const response = await fetch(`/api/GetAllContacts.php?userId=${session.userId}`);
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
@@ -104,6 +104,9 @@ const renderContacts = (contacts) => {
     contacts.forEach((contact, index) => {
         const row = document.createElement("tr");        
 
+        //set data attribute for the contact id
+        row.setAttribute("data-contact-id", contact.contactId);
+
         const name = contact.firstName + " " + contact.lastName;
         const initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
 
@@ -189,12 +192,33 @@ const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
     return -1;
 };
 
+// Variable to store the contact id to delete
+let contactIdToDelete = null;
+
 // Event Listeners
 const initializeEventListeners = () => {
     document.addEventListener("DOMContentLoaded", function() {        
         loadContacts(true);
-    });    
-    //TODO:  Add more listeners here, for delete/edit create buttons
+    });     
+
+    // Event delegation for delete buttons
+    document.addEventListener("click", function(event) {
+        const deleteButton = event.target.closest(".btn-delete");
+        if (deleteButton) {
+            // Get the corresponding table row
+            const row = deleteButton.closest("tr");
+            contactIdToDelete = row.getAttribute("data-contact-id");
+            
+            // Show the delete confirmation modal
+            const deleteModal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
+            deleteModal.show();
+        }
+    });
+
+    document.getElementById("confirmDeleteButton").addEventListener("click", async function() {
+        if (!contactIdToDelete) return;
+        alert(contactIdToDelete);
+    });
 };
 
 

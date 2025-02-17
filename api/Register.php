@@ -65,7 +65,7 @@ if ($conn->connect_error) {
 // if the connection was successful, use the information sent in to create a new user and close the connection.
 else {
     // set up the line to send
-    $statement = $conn->prepare("INSERT INTO Users (Login, Password) VALUES(?, ?)");
+    $statement = $conn->prepare("INSERT INTO users (Login, Password) VALUES(?, ?)");
     // fill in the line with our user's info
     $statement->bind_param("ss", $newLogin, $newPassword);
 
