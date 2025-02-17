@@ -25,7 +25,7 @@ try
     $firstName = trim($data["firstName"] ?? "");
     $lastName = trim($data["lastName"] ?? "");
     $phoneNumber = trim($data["phoneNumber"] ?? "");
-    $email = isset($data["email"]) ? trim($data["email"]) : null;
+    $email = isset($data["email"]) ? trim($data["email"]) : null; // Ensure null if not provided
     $userID = trim($data["userID"] ?? "");
 
     // Validate required fields
@@ -50,8 +50,12 @@ try
         throw new Exception("Database error: " . $conn->error);
     }
 
-    // Bind parameters correctly
-    $stmt->bind_param("ssssi", $userID,$firstName, $lastName, $phoneNumber, $email);
+    // Bind parameters, ensuring email is set to NULL if not provided
+    if ($email === null) {
+        $stmt->bind_param("sssss", $userID, $firstName, $lastName, $phoneNumber, $email);
+    } else {
+        $stmt->bind_param("sssss", $userID, $firstName, $lastName, $phoneNumber, $email);
+    }
 
     // Execute statement
     if (!$stmt->execute()) {
@@ -79,4 +83,3 @@ catch(Exception $e)
 // Return JSON response
 echo json_encode($response);
 ?>
-
