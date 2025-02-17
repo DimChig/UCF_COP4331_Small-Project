@@ -108,7 +108,10 @@ const renderContacts = (contacts) => {
         row.setAttribute("data-contact-id", contact.contactId);
 
         const name = contact.firstName + " " + contact.lastName;
-        const initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
+        let initials = "";
+        if (contact.firstName && contact.lastName) {
+            initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
+        }
 
         const avatarAndName = 
         `<div class="d-flex align-items-center">
@@ -159,6 +162,34 @@ const addContact = async (firstName, lastName, phoneNumber, email) => {
     return await response.json();
 };
 
+// API call for updating a contact
+const updateContact = async (contactId, firstName, lastName, phoneNumber, email) => {
+    const session = retrieveSession();
+    if (!session || !session.userId) {
+        window.location.href = "/";
+        return;
+    }
+
+    const response = await fetch("/api/EditContact.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            userId: session.userId,
+            contactId: contactId,
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: phoneNumber,
+            email: email,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    return await response.json();
+};
+
 const deleteContact = async (contactId) => {
     const session = retrieveSession();    
     if (!session || !session.userId) {
@@ -189,6 +220,7 @@ const loadContacts = async (isShowSpinner) => {
     try {              
         //await new Promise(resolve => setTimeout(resolve, 1000)); //for testing
         const contacts = await fetchContacts();
+        window.contactsList = contacts; //save
         renderContacts(contacts);
     } catch (error) {
         showErrorMessage("<b>Failed to load contacts</b><br>\n" + error, "ShowContactsError");        
@@ -215,6 +247,22 @@ const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
     return -1;
 };
 
+const handleUpdateContact = async (contactId, firstName, lastName, phoneNumber, email) => {
+    try {
+        const data = await updateContact(contactId, firstName, lastName, phoneNumber, email);
+
+        if (data.success) {
+            return true;
+        } else if (data.error) {
+            showErrorMessage(data.error, "UpdateModalError");
+        }
+    } catch (error) {
+        console.error("Update Contact Error:", error);
+        showErrorMessage("An error occurred. Please try again.", "UpdateModalError");
+    }
+    return false;
+};
+
 const handleDeleteContact = async (contactId) => {
     try {        
         const data = await deleteContact(contactId);
@@ -232,7 +280,7 @@ const handleDeleteContact = async (contactId) => {
 };
 
 // Variable to store the contact id to delete
-let contactIdToDelete = null;
+let selectedContactId = null;
 
 // Event Listeners
 const initializeEventListeners = () => {
@@ -246,13 +294,43 @@ const initializeEventListeners = () => {
         if (deleteButton) {
             // Get the corresponding table row
             const row = deleteButton.closest("tr");
-            contactIdToDelete = row.getAttribute("data-contact-id");
+            selectedContactId = row.getAttribute("data-contact-id");
             
             // Show the delete confirmation modal
             const deleteModal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
             deleteModal.show();
         }
     });    
+
+    document.addEventListener("click", function(event) {
+        const updateButton = event.target.closest(".btn-update");        
+        if (updateButton) {
+            // Get the corresponding table row and contact id
+            const row = updateButton.closest("tr");
+            const contactId = row.getAttribute("data-contact-id");
+                        
+            // Find the full contact data from the global contactsList (set in renderContacts)
+            const contact = window.contactsList
+                ? window.contactsList.find(c => c.contactId == contactId)
+                : null;
+    
+            if (contact) {
+                selectedUpdateContactId = contactId;
+                // Populate the update modal with current contact details
+                let modal = document.querySelector("#updateModal");
+                modal.querySelector("#update-first-name").value = contact.firstName;
+                modal.querySelector("#update-last-name").value = contact.lastName;
+                modal.querySelector("#update-phone-number").value = contact.phoneNumber;
+                modal.querySelector("#update-email").value = contact.email || "";
+
+                hideErrorMessage("UpdateModalError");
+    
+                // Show the update modal
+                const updateModal = new bootstrap.Modal(document.getElementById("updateModal"));
+                updateModal.show();
+            }
+        }
+    });
 };
 
 
@@ -341,8 +419,55 @@ document.querySelector("#addModal form").addEventListener("submit", async functi
     }
 });
 
+document.querySelector("#updateModal form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    let modal = document.querySelector("#updateModal");
+
+    let firstName = modal.querySelector("#update-first-name").value.trim();
+    let lastName = modal.querySelector("#update-last-name").value.trim();
+    let phoneNumber = modal.querySelector("#update-phone-number").value.trim();
+    let email = modal.querySelector("#update-email").value ?? null;
+    if (!email || email.length === 0) email = null;
+
+    // Validate inputs
+    const validationError = getUpdateContactValidationError(firstName, lastName, phoneNumber, email);
+    if (validationError) { 
+        showErrorMessage(validationError, "UpdateModalError"); 
+        return; 
+    }
+
+    // Show loading state
+    showSpinner("updateModalSpinner");
+    const buttonTextElement = document.getElementById("updateModalUpdateButtonText");
+    const originalButtonText = buttonTextElement.innerHTML;
+    buttonTextElement.innerHTML = "Updating...";
+    modal.querySelectorAll("button").forEach(button => button.disabled = true);
+
+    // Execute update    
+    const isSuccess = await handleUpdateContact(selectedUpdateContactId, firstName, lastName, phoneNumber, email);
+
+    // Reload the contacts list
+    await loadContacts(false);
+
+    // Hide loading state and re-enable buttons
+    hideSpinner("updateModalSpinner");
+    buttonTextElement.innerHTML = originalButtonText;
+    modal.querySelectorAll("button").forEach(button => button.disabled = false);
+
+    if (isSuccess) {
+        hideErrorMessage("UpdateModalError");
+        this.reset();
+
+        // Hide the update modal
+        const updateModalElement = document.getElementById("updateModal");
+        const updateModalInstance = bootstrap.Modal.getInstance(updateModalElement);
+        if (updateModalInstance) updateModalInstance.hide();
+    }
+});
+
 document.getElementById("confirmDeleteButton").addEventListener("click", async function () {
-    if (!contactIdToDelete) return;
+    if (!selectedContactId) return;
 
     let modal = document.querySelector("#confirmDeleteModal"); 
 
@@ -351,7 +476,7 @@ document.getElementById("confirmDeleteButton").addEventListener("click", async f
     modal.querySelectorAll("button").forEach(button => button.disabled = true);
 
     //execute query "delete"    
-    const isSuccess = await handleDeleteContact(contactIdToDelete);      
+    const isSuccess = await handleDeleteContact(selectedContactId);      
 
     //execute query "load"
     await loadContacts(false);
@@ -369,6 +494,6 @@ document.getElementById("confirmDeleteButton").addEventListener("click", async f
         if (deleteModal) deleteModal.hide();
 
         // Clear the stored contact id
-        contactIdToDelete = null;
+        selectedContactId = null;
     }
 });

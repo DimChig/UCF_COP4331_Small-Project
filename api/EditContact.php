@@ -16,16 +16,21 @@ $data = getRequestInfo();
 
 
 //sanitize input data
-$userId = $data["ID"] ?? null;
-$firstName = $data["FirstName"] ?? null;
-$lastName = $data["LastName"] ?? null;
-$phoneNumber = $data["PhoneNumber"] ?? null;
-$email = $data["Email"] ?? null;
+$userId = isset($data["userId"]) ? trim($data["userId"]) : null;
+$contactId = isset($data["contactId"]) ? trim($data["contactId"]) : null;
+$firstName = isset($data["firstName"]) ? trim($data["firstName"]) : null;
+$lastName = isset($data["lastName"]) ? trim($data["lastName"]) : null;
+$phoneNumber = isset($data["phoneNumber"]) ? trim($data["phoneNumber"]) : null;
+$email = isset($data["email"]) ? trim($data["email"]) : null;
 
+
+if (empty($firstName) || empty($lastName) || empty($phoneNumber) || !$userId || !$contactId) {
+    throw new Exception("Missing required fields");
+}
 
 //prepare SQL query
-$stmt = $conn->prepare("UPDATE contacts SET FirstName=?, LastName=?, PhoneNumber=?, Email=? WHERE ID=?");
-$stmt->bind_param("ssssi",$userId, $firstName, $lastName, $phoneNumber, $email);
+$stmt = $conn->prepare("UPDATE contacts SET FirstName=?, LastName=?, Phone=?, Email=? WHERE UserID=? AND ID=?");
+$stmt->bind_param("ssssii", $firstName, $lastName, $phoneNumber, $email, $userId, $contactId);
 
 // bind parameters dynamically
 

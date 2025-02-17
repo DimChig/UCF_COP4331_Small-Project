@@ -79,3 +79,7 @@ function getAddContactValidationError(firstName, lastName, phoneNumber, email) {
 
     return null; // No validation errors
 }
+
+function getUpdateContactValidationError(firstName, lastName, phoneNumber, email) {
+    return getAddContactValidationError(firstName, lastName, phoneNumber, email);
+}
