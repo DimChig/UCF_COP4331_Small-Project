@@ -6,14 +6,14 @@ const fetchContacts = async () => {
         return;
     }
 
-    try {
+    try {                
         const response = await fetch(`/api/getAllContacts.php?userId=${session.userId}`);
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
         }
 
-        const data = await response.json();        
+        const data = await response.json();                  
 
         if (data.error) {
             throw new Error(data.error || "Unknown error");
@@ -157,20 +157,26 @@ const addContact = async (firstName, lastName, phoneNumber, email) => {
 };
 
 // Event Handlers
-const loadContacts = async () => {    
-    try {
+const loadContacts = async (isShowSpinner) => {    
+    if (isShowSpinner) showSpinner("contactTableSpinner");
+
+    try {              
+        //await new Promise(resolve => setTimeout(resolve, 1000)); //for testing
         const contacts = await fetchContacts();
         renderContacts(contacts);
     } catch (error) {
         showErrorMessage("<b>Failed to load contacts</b><br>\n" + error, "ShowContactsError");        
     }
+
+    hideSpinner("contactTableSpinner");
 };
 
 
 const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
     try {
+        //await new Promise(resolve => setTimeout(resolve, 1000)); //for testing
         const data = await addContact(firstName, lastName, phoneNumber, email);
-        console.log(data);
+        
         if (data.contactId && !data.error) {
             return data.contactId;
         } else if (data.error) {
@@ -185,9 +191,13 @@ const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
 
 // Event Listeners
 const initializeEventListeners = () => {
-    document.addEventListener("DOMContentLoaded", loadContacts);    
+    document.addEventListener("DOMContentLoaded", function() {        
+        loadContacts(true);
+    });    
     //TODO:  Add more listeners here, for delete/edit create buttons
 };
+
+
 
 // Initialize all event listeners
 initializeEventListeners();
@@ -198,6 +208,17 @@ document.getElementById("logout").addEventListener("click", function() {
     window.location.href = "/";
 });
 
+function showSpinner(spinnerId) {  
+    const spinner = document.getElementById(spinnerId);
+    if (!spinner) return;    
+    spinner.hidden = false;     
+}
+
+function hideSpinner(spinnerId) {
+    const spinner = document.getElementById(spinnerId);
+    if (!spinner) return;    
+    spinner.hidden = true;     
+}
 
 function showErrorMessage(message, containerId) {
     const container = document.getElementById(containerId);
@@ -231,19 +252,30 @@ document.querySelector("#addModal form").addEventListener("submit", async functi
         return;   
     }
 
-    let formData = { firstName, lastName, phoneNumber, email };
+    //show loading
+    showSpinner("addModalSpinner");
+    const buttonTextElement = document.getElementById("addModalAddButtonText");
+    const originalButtonText = buttonTextElement.innerHTML;
+    buttonTextElement.innerHTML = "Adding...";
+    modal.querySelectorAll("button").forEach(button => button.disabled = true);
 
-    console.log("Form Submitted:", formData);
 
+    //execure query "add"
     const insertedContactId = await handleAddContact(firstName, lastName, phoneNumber, email);
     if (insertedContactId == -1) return;
 
+
+    //execute query "load"
+    await loadContacts(false);
+
+    //hide loading
+    hideSpinner("addModalSpinner");
+    buttonTextElement.innerHTML = originalButtonText;
+    modal.querySelectorAll("button").forEach(button => button.disabled = false);
+
     hideErrorMessage("AddModalError");
     this.reset();
-    console.log("Inserted ", insertedContactId);
     
     let dismissButton = modal.querySelector("[data-bs-dismiss='modal']");
     if (dismissButton) dismissButton.click();
-
-    loadContacts();
 });
