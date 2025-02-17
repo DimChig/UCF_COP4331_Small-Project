@@ -1,57 +1,82 @@
 <?php
-//Daniel Armas API 2
+// Daniel Armas API 2
 
+require_once("db_connector.php");
 
-//header and error return
+// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
+$response = []; // Initialize response array
+
 try
 { 
-    // reading json data
+    // Read JSON data from the request
     $data = json_decode(file_get_contents("php://input"), true);
 
-    // return error if invalid data
+    // Validate JSON input
     if (!is_array($data))
     {
         throw new Exception("Invalid JSON input");
     }
-    
 
-    // extracting variables
+    // Extracting variables from the request
     $firstName = trim($data["firstName"] ?? "");
     $lastName = trim($data["lastName"] ?? "");
     $phoneNumber = trim($data["phoneNumber"] ?? "");
     $email = isset($data["email"]) ? trim($data["email"]) : null;
+    $userID = trim($data["userID"] ?? "");
 
-    if(empty($firstName) || empty($lastName) || empty($phoneNumber))
-    {
+    // Validate required fields
+    if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($userID)) {
         throw new Exception("Missing required fields");
     }
 
-
-    // retrieve userID from cookies
-    if(!isset($_COOKIE["userID"]) || !is_numeric($_COOKIE["userID"]))
-    {
-        throw new Exception("User not authenticated");
+    // Validate email format if provided
+    if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new Exception("Invalid email format");
     }
-    $userID = (int) $_COOKIE["userID"];
 
-    $stmt = $conn->prepare("INSERT INTO Contacts (FirstName, LastName, Phone, Email, UserID) VALUES (?, ?, ?, ?, ?)");
-    $stmt->blnd_param("ssssi", $firstName, $lastName, $phoneNumber, $email, $userID);
+    // Validate phone number format (digits only, 10-15 characters)
+    if (!preg_match("/^\d{10,15}$/", $phoneNumber)) {
+        throw new Exception("Invalid phone number format");
+    }
 
-    if(!$stmt->execute())
-    {
+    // Prepare SQL statement
+    $stmt = $conn->prepare("INSERT INTO Contacts (ID, FirstName, LastName, PhoneNumber, Email) VALUES (?, ?, ?, ?, ?)");
+    
+    if (!$stmt) {
+        throw new Exception("Database error: " . $conn->error);
+    }
+
+    // Bind parameters correctly
+    $stmt->bind_param("ssssi", $userID,$firstName, $lastName, $phoneNumber, $email);
+
+    // Execute statement
+    if (!$stmt->execute()) {
         throw new Exception("Database error: " . $stmt->error);
     }
-    }
+
+    // Get the ID of the newly created contact
+    $newContactId = $stmt->insert_id;
+
+    // Success response
+    $response = [
+        "success" => true,
+        "message" => "Contact added successfully.",
+        "contact_id" => $newContactId
+    ];
+
+    $stmt->close();
+}
 catch(Exception $e)
 {
+    $response["success"] = false;
     $response["error"] = $e->getMessage();
 }
 
-// return JSON response
+// Return JSON response
 echo json_encode($response);
-
 ?>
+
