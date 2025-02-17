@@ -201,8 +201,7 @@ const handleAddContact = async (event) => {
 
 // Event Listeners
 const initializeEventListeners = () => {
-    document.addEventListener("DOMContentLoaded", loadContacts);
-    document.querySelector("#addModal form").addEventListener("submit", handleAddContact);
+    document.addEventListener("DOMContentLoaded", loadContacts);    
     //TODO:  Add more listeners here, for delete/edit create buttons
 };
 
@@ -213,4 +212,44 @@ initializeEventListeners();
 document.getElementById("logout").addEventListener("click", function() {
     sessionLogout();
     window.location.href = "/";
+});
+
+
+function showError(containerId, message) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = message;
+    container.style.display = "block";    
+}
+
+document.querySelector("#addModal form").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    // Select only inside #addModal to avoid conflicts
+    let modal = document.querySelector("#addModal");    
+    
+    let firstName = modal.querySelector("#first-name").value.trim();
+    let lastName = modal.querySelector("#last-name").value.trim();
+    let phoneNumber = modal.querySelector("#phone-number").value.trim();
+    let email = modal.querySelector("#email").value ?? null;
+    if (!email || email.length == 0) email = null;
+
+    const errorElementId = "AddModalError";
+
+    // Basic validation
+    if (!firstName || !lastName || !phoneNumber) {        
+        showError(errorElementId, "Please fill in all required fields.");
+        return;
+    }
+
+    showError(errorElementId, "Test.");
+
+    let formData = { firstName, lastName, phoneNumber, email };
+
+    console.log("Form Submitted:", formData);
+
+    //handleAddContact();
+    //addContactModal();
+
+
 });

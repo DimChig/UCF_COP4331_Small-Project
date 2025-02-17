@@ -31,7 +31,8 @@
                     <button id="logout" type="button" class="btn btn-primary fs-6">
                         <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
                     </button>
-                    <button id="addcontact" type="button" class="btn btn-light fs-6" style="font-size: 0.875rem!important;" data-bs-toggle="modal"
+                    <button id="addcontact" type="button" class="btn btn-light fs-6" style="font-size: 0.875rem!important;" 
+                        data-bs-toggle="modal"
                         data-bs-target="#addModal">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Contact
                     </button>
@@ -73,37 +74,46 @@
 
             <div class="modal-dialog">
                 <div class="modal-content">
+                    <!-- Modal Header -->
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="addModalLabel">Create New Contact</h5>
+                        <h5 class="modal-title" id="addModalLabel">New Contact</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-
-
-                    <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                                <label for="first-name" class="col-form-label">First Name</label>
-                                <input type="text" class="form-control" id="first-name">
-                            </div>
-                            <div class="mb-3">
-                                <label for="last-name" class="col-form-label">Last Name</label>
-                                <input type="text" class="form-control" id="last-name">
+                    <form>
+                        <!-- Modal Body -->
+                        <div class="modal-body">                            
+                            <div class="d-flex flex-row justify-content-between gap-3 mb-3">
+                                <div style="flex: 1">
+                                    <label for="first-name" class="col-form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first-name" placeholder="Ben" required>
+                                </div>
+                                <div style="flex: 1">
+                                    <label for="last-name" class="col-form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last-name" placeholder="Dover" required>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="phone-number" class="col-form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="phone-number">
+                                <input type="tel" class="form-control" id="phone-number" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="col-form-label">Email</label>
-                                <input type="text" class="form-control" id="email">
+                                <input type="email" class="form-control" id="email">
                             </div>
-                        </form>
+                            <div
+                                id="AddModalError"
+                                hidden
+                                class="alert alert-danger mt-3"
+                                role="alert"
+                            ></div>
+                        </div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Add Contact</button>
-                    </div>
+                        <!-- Footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="addContactModalButton">Add Contact</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
