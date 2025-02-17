@@ -60,13 +60,20 @@
                 </div>
             </div>
             <!-- No Contacts Message-->
-            <div id="no-contacts-message" class="text-center d-none">
+            <div id="no-contacts-message" hidden class="text-center d-none">
                 <img src="img/panda.png">
                 <div  class="mt-3">
                     <h5>Oops! No contacts here yet.</h5>
                     <span>Start by adding a new contact using the button above.</span>
                 </div>
             </div>
+
+            <div
+                id="ShowContactsError"
+                hidden
+                class="alert alert-danger m-3"
+                role="alert"
+            ></div>
         </div>
 
         <!-- Add / Edit Contact Modal -->
@@ -103,7 +110,7 @@
                             <div
                                 id="AddModalError"
                                 hidden
-                                class="alert alert-danger mt-3"
+                                class="alert alert-danger mt-3 mb-0"
                                 role="alert"
                             ></div>
                         </div>
@@ -125,6 +132,7 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
     <script src="/js/session.js"></script>
+    <script src="/js/validation.js"></script>
     <script src="/js/contacts.js"></script>
 
 </body>

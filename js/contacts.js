@@ -125,13 +125,6 @@ const renderContacts = (contacts) => {
     });
 };
 
-//handle errors, that needs to be tweaked I think maybe not not sure
-const showErrorMessage = (message, elementId) => {
-    const errorDiv = document.getElementById(elementId);
-    errorDiv.textContent = message;
-    errorDiv.classList.remove("d-none");
-};
-
 // API Calls Module
 const addContact = async (fname, lname, phone, email) => {
     const response = await fetch("/api/someEndpoint.php", {
@@ -144,16 +137,7 @@ const addContact = async (fname, lname, phone, email) => {
         throw new Error(`Server responded with status ${response.status}`);
     }
 
-    const text = await response.text();
-    let data;
-
-    try {
-        data = JSON.parse(text);
-    } catch {
-        throw new Error("Failed to parse JSON");
-    }
-
-    return data;
+    return await response.json();
 };
 
 // Event Handlers
@@ -170,7 +154,7 @@ const loadContacts = async () => {
         const contacts = await fetchContacts(userId);
         renderContacts(contacts);
     } catch (error) {
-        showErrorMessage("Failed to load contacts.", "no-contacts-message");
+        showErrorMessage("<b>Failed to load contacts</b><br>\n" + error, "ShowContactsError");        
     }
 };
 
@@ -215,11 +199,11 @@ document.getElementById("logout").addEventListener("click", function() {
 });
 
 
-function showError(containerId, message) {
+function showErrorMessage(message, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = message;
-    container.style.display = "block";    
+    container.hidden = false;    
 }
 
 document.querySelector("#addModal form").addEventListener("submit", function(event) {
@@ -236,13 +220,11 @@ document.querySelector("#addModal form").addEventListener("submit", function(eve
 
     const errorElementId = "AddModalError";
 
-    // Basic validation
-    if (!firstName || !lastName || !phoneNumber) {        
-        showError(errorElementId, "Please fill in all required fields.");
-        return;
+    const validationError = getAddContactValidationError(firstName, lastName, phoneNumber, email);
+    if (validationError) {
+        showErrorMessage(validationError, errorElementId);
+        return;   
     }
-
-    showError(errorElementId, "Test.");
 
     let formData = { firstName, lastName, phoneNumber, email };
 

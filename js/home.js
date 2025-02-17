@@ -49,43 +49,6 @@ const redirectToContacts = () => {
     window.location.href = '/contacts.html';
 };
 
-// Validation logic
-
-function getValidationLogin(login) {
-    if (!login || login.trim().length == 0) return "Login is required!"        
-    if (login.length < 3) return "Login must be at least 3 characters long!";
-    if (login.length >= 30) return "Login is too long!";
-    return null;
-}
-
-function getValidationPassword(password) {
-    if (!password || password.length == 0) return "Password is required!";
-    if (password.length < 4) return "Password must be at least 4 characters long!";
-    if (password.length >= 30) return "Password is too long!";
-    return null;
-}
-
-function getLoginValidationError(login, password) {
-    const loginError = getValidationLogin(login);
-    if (loginError) return loginError;    
-
-    const passwordError = getValidationPassword(password);
-    if (passwordError) return passwordError;
-  
-    return null;
-}
-
-function getSignupValidationError(login, password, passwordConfirm) {
-    const loginError = getValidationLogin(login);
-    if (loginError) return loginError;
-
-    const passwordError = getValidationPassword(password);
-    if (passwordError) return passwordError;
-
-    if (password !== passwordConfirm) return "Passwords don't match!";    
-    return null;
-}
-
 // Event Handlers
 const handleLogin = async (event) => {
     event.preventDefault();
