@@ -159,6 +159,29 @@ const addContact = async (firstName, lastName, phoneNumber, email) => {
     return await response.json();
 };
 
+const deleteContact = async (contactId) => {
+    const session = retrieveSession();    
+    if (!session || !session.userId) {
+        window.location.href = "/";
+        return;
+    }
+
+    const response = await fetch("/api/DeleteContact.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            "userId": session.userId, 
+            "contactId": contactId
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    return await response.json();
+};
+
 // Event Handlers
 const loadContacts = async (isShowSpinner) => {    
     if (isShowSpinner) showSpinner("contactTableSpinner");
@@ -186,10 +209,26 @@ const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
             showErrorMessage(data.error, "AddModalError");        
         }
     } catch (error) {
-        console.error("Update Contact Error:", error);
+        console.error("Add Contact Error:", error);
         showErrorMessage("An error occurred. Please try again.", "AddModalError");
     }
     return -1;
+};
+
+const handleDeleteContact = async (contactId) => {
+    try {        
+        const data = await deleteContact(contactId);
+        
+        if (data.success) {
+            return true;
+        } else if (data.error) {
+            showErrorMessage(data.error, "ConfirmDeleteModalError");        
+        }
+    } catch (error) {
+        console.error("Delete Contact Error:", error);
+        showErrorMessage("An error occurred. Please try again.", "ConfirmDeleteModalError");
+    }    
+    return false;
 };
 
 // Variable to store the contact id to delete
@@ -281,8 +320,7 @@ document.querySelector("#addModal form").addEventListener("submit", async functi
 
     //execure query "add"
     const insertedContactId = await handleAddContact(firstName, lastName, phoneNumber, email);
-    if (insertedContactId == -1) return;
-
+    const isSuccess = insertedContactId != -1;
 
     //execute query "load"
     await loadContacts(false);
@@ -292,14 +330,45 @@ document.querySelector("#addModal form").addEventListener("submit", async functi
     buttonTextElement.innerHTML = originalButtonText;
     modal.querySelectorAll("button").forEach(button => button.disabled = false);
 
-    hideErrorMessage("AddModalError");
-    this.reset();
-    
-    let dismissButton = modal.querySelector("[data-bs-dismiss='modal']");
-    if (dismissButton) dismissButton.click();
+    if (isSuccess) {
+        hideErrorMessage("AddModalError");
+        this.reset();
+
+        // Hide the delete confirmation modal
+        const addModalElement = document.getElementById("addModal");
+        const addModal = bootstrap.Modal.getInstance(addModalElement);
+        if (addModal) addModal.hide();
+    }
 });
 
-document.getElementById("confirmDeleteButton").addEventListener("click", async function() {
+document.getElementById("confirmDeleteButton").addEventListener("click", async function () {
     if (!contactIdToDelete) return;
-    alert(contactIdToDelete);
+
+    let modal = document.querySelector("#confirmDeleteModal"); 
+
+    // Show loading state for delete button    
+    showSpinner("deleteModalSpinner");
+    modal.querySelectorAll("button").forEach(button => button.disabled = true);
+
+    //execute query "delete"    
+    const isSuccess = await handleDeleteContact(contactIdToDelete);      
+
+    //execute query "load"
+    await loadContacts(false);
+
+    // Hide loading state, clear error messages, and reset the modal
+    hideSpinner("deleteModalSpinner");        
+    modal.querySelectorAll("button").forEach(button => button.disabled = false);
+
+    // Hide the delete confirmation modal
+    if (isSuccess) {
+        hideErrorMessage("ConfirmDeleteModalError");
+
+        const deleteModalElement = document.getElementById("confirmDeleteModal");
+        const deleteModal = bootstrap.Modal.getInstance(deleteModalElement);
+        if (deleteModal) deleteModal.hide();
+
+        // Clear the stored contact id
+        contactIdToDelete = null;
+    }
 });
