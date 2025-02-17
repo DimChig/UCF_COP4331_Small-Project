@@ -5,16 +5,22 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
+// requesting data
+function getRequestInfo()
+{
+    return json_decode(file_get_contents('php://input'), true);
+}
+
 //read json data
-$data = json_decode(file_get_contents("php://input"), true);
+$data = getRequestInfo();
 
 
 //sanitize input data
-$userId = isset($data["ID"]) ? (int) $data["ID"] : 0;
-$firstName = trim($data["FirstName"]);
-$lastName = trim($data["LastName"]);
-$phoneNumber = trim($data["Phone"]);
-$email = trim($data["Email"]);
+$userId = $data["ID"] ?? null;
+$firstName = $data["FirstName"] ?? null;
+$lastName = $data["LastName"] ?? null;
+$phoneNumber = $data["PhoneNumber"] ?? null;
+$email = $data["Email"] ?? null;
 
 
 //prepare SQL query
