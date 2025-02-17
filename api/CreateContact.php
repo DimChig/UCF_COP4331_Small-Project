@@ -44,7 +44,7 @@ try
     }
 
     // Prepare SQL statement
-    $stmt = $conn->prepare("INSERT INTO Contacts (FirstName, LastName, Phone, Email, UserID) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO contacts (FirstName, LastName, Phone, Email, UserID) VALUES (?, ?, ?, ?, ?)");
     
     if (!$stmt) {
         throw new Exception("Database error: " . $conn->error);

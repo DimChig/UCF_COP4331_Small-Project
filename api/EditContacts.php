@@ -24,7 +24,7 @@ $email = $data["Email"] ?? null;
 
 
 //prepare SQL query
-$stmt = $conn->prepare("UPDATE Contacts SET FirstName=?, LastName=?, PhoneNumber=?, Email=? WHERE ID=?");
+$stmt = $conn->prepare("UPDATE contacts SET FirstName=?, LastName=?, PhoneNumber=?, Email=? WHERE ID=?");
 $stmt->bind_param("ssssi",$userId, $firstName, $lastName, $phoneNumber, $email);
 
 // bind parameters dynamically

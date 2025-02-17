@@ -40,7 +40,7 @@ if ($conn->connect_error) {
 //otherwise, perform logic
 else {
     // prepare SQL statement
-    $stmt = $conn->prepare("SELECT `ID`, `FirstName`, `LastName`, `Phone`, `Email`, `DateCreated` FROM `Contacts` WHERE `UserID` = ?");
+    $stmt = $conn->prepare("SELECT `ID`, `FirstName`, `LastName`, `Phone`, `Email`, `DateCreated` FROM `contacts` WHERE `UserID` = ?");
     $stmt->bind_param("i", $userID);
     $stmt->execute();
     $result = $stmt->get_result();

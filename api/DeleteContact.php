@@ -54,7 +54,7 @@ if ($conn->connect_error) {
 }
 
 // prepare statement
-$stmt = $conn->prepare("DELETE FROM Contacts WHERE ID = ? AND UserID = ?");
+$stmt = $conn->prepare("DELETE FROM contacts WHERE ID = ? AND UserID = ?");
 if (!$stmt) {
     returnWithError("sql prepare failed: " . $conn->error);
 }

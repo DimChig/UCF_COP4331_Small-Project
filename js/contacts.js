@@ -213,12 +213,7 @@ const initializeEventListeners = () => {
             const deleteModal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
             deleteModal.show();
         }
-    });
-
-    document.getElementById("confirmDeleteButton").addEventListener("click", async function() {
-        if (!contactIdToDelete) return;
-        alert(contactIdToDelete);
-    });
+    });    
 };
 
 
@@ -302,4 +297,9 @@ document.querySelector("#addModal form").addEventListener("submit", async functi
     
     let dismissButton = modal.querySelector("[data-bs-dismiss='modal']");
     if (dismissButton) dismissButton.click();
+});
+
+document.getElementById("confirmDeleteButton").addEventListener("click", async function() {
+    if (!contactIdToDelete) return;
+    alert(contactIdToDelete);
 });

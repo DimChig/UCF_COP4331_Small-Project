@@ -45,7 +45,7 @@ if ($conn->connect_error) {
 //otherwise, perform logic
 else {
     // prepare the statement
-    $stmt = $conn->prepare("SELECT ID, FirstName, LastName, Phone, Email, DateCreated FROM Contacts WHERE UserID = ? AND ID = ?");
+    $stmt = $conn->prepare("SELECT ID, FirstName, LastName, Phone, Email, DateCreated FROM contacts WHERE UserID = ? AND ID = ?");
     $stmt->bind_param("ii", $userID ,$contactID);
     $stmt->execute();
     $result = $stmt->get_result();
