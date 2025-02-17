@@ -1,7 +1,13 @@
 // API Calls Module
-const fetchContacts = async (userId) => {
+const fetchContacts = async () => {
+    const session = retrieveSession();    
+    if (!session || !session.userId) {
+        window.location.href = "/";
+        return;
+    }
+
     try {
-        const response = await fetch(`/api/getAllContacts.php?userId=${userId}`);
+        const response = await fetch(`/api/getAllContacts.php?userId=${session.userId}`);
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
@@ -84,11 +90,11 @@ const renderContacts = (contacts) => {
 
     //hide/add container with " No Contacts Message"
     if (contacts.length === 0) {        
-        noContactsMessage.classList.remove("d-none");
+        noContactsMessage.hidden = false;
         return;
     } 
     tableLayout.classList.remove("d-none");
-    noContactsMessage.classList.add("d-none");
+    noContactsMessage.hidden = true;
 
     //buttons
     const updateButton = '<button type="button" class="btn-update btn text-primary"><i class="fa fa-gear" aria-hidden="true"></i></button>';
@@ -96,9 +102,7 @@ const renderContacts = (contacts) => {
 
     //loop over contacts to create table rows
     contacts.forEach((contact, index) => {
-        const row = document.createElement("tr");
-
-        console.log(contact);
+        const row = document.createElement("tr");        
 
         const name = contact.firstName + " " + contact.lastName;
         const initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
@@ -126,11 +130,23 @@ const renderContacts = (contacts) => {
 };
 
 // API Calls Module
-const addContact = async (fname, lname, phone, email) => {
-    const response = await fetch("/api/someEndpoint.php", {
+const addContact = async (firstName, lastName, phoneNumber, email) => {
+    const session = retrieveSession();    
+    if (!session || !session.userId) {
+        window.location.href = "/";
+        return;
+    }
+
+    const response = await fetch("/api/CreateContact.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fname, lname, phone, email }),
+        body: JSON.stringify({ 
+            "userId": session.userId, 
+            "firstName": firstName, 
+            "lastName": lastName, 
+            "phoneNumber": phoneNumber, 
+            "email": email,
+        }),
     });
 
     if (!response.ok) {
@@ -141,17 +157,9 @@ const addContact = async (fname, lname, phone, email) => {
 };
 
 // Event Handlers
-const loadContacts = async () => {
-    const session = retrieveSession();    
-    if (!session || !session.userId) {
-        window.location.href = "/";
-        return;
-    }
-
-    const userId = session.userId;    
-
+const loadContacts = async () => {    
     try {
-        const contacts = await fetchContacts(userId);
+        const contacts = await fetchContacts();
         renderContacts(contacts);
     } catch (error) {
         showErrorMessage("<b>Failed to load contacts</b><br>\n" + error, "ShowContactsError");        
@@ -159,28 +167,20 @@ const loadContacts = async () => {
 };
 
 
-const handleAddContact = async (event) => {
-    event.preventDefault();
-
-    const fname = document.getElementById("first-name").value;
-    const lname = document.getElementById("last-name").value;
-    const phone = document.getElementById("phone-number").value;
-    const email = document.getElementById("email").value;
-
-    console.log("Update Attempt:", { fname: fname, lname: lname, phone: phone, email: email });
-
+const handleAddContact = async (firstName, lastName, phoneNumber, email) => {
     try {
-        const data = await addContact(loginEmail, loginPassword);
-
-        if (data.success) {
-            redirectToContacts();
-        } else {
-            alert(data.message); // To be improved later
+        const data = await addContact(firstName, lastName, phoneNumber, email);
+        console.log(data);
+        if (data.contactId && !data.error) {
+            return data.contactId;
+        } else if (data.error) {
+            showErrorMessage(data.error, "AddModalError");        
         }
     } catch (error) {
         console.error("Update Contact Error:", error);
-        alert("An error occurred. Please try again.");
+        showErrorMessage("An error occurred. Please try again.", "AddModalError");
     }
+    return -1;
 };
 
 // Event Listeners
@@ -206,7 +206,14 @@ function showErrorMessage(message, containerId) {
     container.hidden = false;    
 }
 
-document.querySelector("#addModal form").addEventListener("submit", function(event) {
+function hideErrorMessage(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    container.hidden = true;   
+}
+
+document.querySelector("#addModal form").addEventListener("submit", async function(event) {
     event.preventDefault();
 
     // Select only inside #addModal to avoid conflicts
@@ -218,11 +225,9 @@ document.querySelector("#addModal form").addEventListener("submit", function(eve
     let email = modal.querySelector("#email").value ?? null;
     if (!email || email.length == 0) email = null;
 
-    const errorElementId = "AddModalError";
-
     const validationError = getAddContactValidationError(firstName, lastName, phoneNumber, email);
     if (validationError) {
-        showErrorMessage(validationError, errorElementId);
+        showErrorMessage(validationError, "AddModalError");
         return;   
     }
 
@@ -230,8 +235,15 @@ document.querySelector("#addModal form").addEventListener("submit", function(eve
 
     console.log("Form Submitted:", formData);
 
-    //handleAddContact();
-    //addContactModal();
+    const insertedContactId = await handleAddContact(firstName, lastName, phoneNumber, email);
+    if (insertedContactId == -1) return;
 
+    hideErrorMessage("AddModalError");
+    this.reset();
+    console.log("Inserted ", insertedContactId);
+    
+    let dismissButton = modal.querySelector("[data-bs-dismiss='modal']");
+    if (dismissButton) dismissButton.click();
 
+    loadContacts();
 });

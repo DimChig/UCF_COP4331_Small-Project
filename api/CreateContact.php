@@ -26,10 +26,10 @@ try
     $lastName = trim($data["lastName"] ?? "");
     $phoneNumber = trim($data["phoneNumber"] ?? "");
     $email = isset($data["email"]) ? trim($data["email"]) : null; // Ensure null if not provided
-    $userID = trim($data["userID"] ?? "");
+    $userID = trim($data["userId"] ?? "");
 
     // Validate required fields
-    if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($userID)) {
+    if (empty($firstName) || empty($lastName) || empty($phoneNumber) || !$userID) {
         throw new Exception("Missing required fields");
     }
 
@@ -44,18 +44,14 @@ try
     }
 
     // Prepare SQL statement
-    $stmt = $conn->prepare("INSERT INTO Contacts (ID, FirstName, LastName, PhoneNumber, Email) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO Contacts (FirstName, LastName, Phone, Email, UserID) VALUES (?, ?, ?, ?, ?)");
     
     if (!$stmt) {
         throw new Exception("Database error: " . $conn->error);
     }
 
     // Bind parameters, ensuring email is set to NULL if not provided
-    if ($email === null) {
-        $stmt->bind_param("sssss", $userID, $firstName, $lastName, $phoneNumber, $email);
-    } else {
-        $stmt->bind_param("sssss", $userID, $firstName, $lastName, $phoneNumber, $email);
-    }
+    $stmt->bind_param("sssss", $firstName, $lastName, $phoneNumber, $email, $userID);
 
     // Execute statement
     if (!$stmt->execute()) {
@@ -66,17 +62,16 @@ try
     $newContactId = $stmt->insert_id;
 
     // Success response
-    $response = [
-        "success" => true,
-        "message" => "Contact added successfully.",
-        "contact_id" => $newContactId
+    $response = [                
+        "contactId" => $newContactId,
+        "error" => null
     ];
 
     $stmt->close();
 }
 catch(Exception $e)
 {
-    $response["success"] = false;
+    $response["contactId"] = null;
     $response["error"] = $e->getMessage();
 }
 
