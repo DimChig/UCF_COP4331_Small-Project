@@ -18,9 +18,6 @@ const loginUser = async (login, password) => {
 
 const signupUser = async (login, password) => {
 
-    let firstName = 'Test1';
-    let lastName = 'Test2';
-
     const response = await fetch("/api/Register.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,13 +35,6 @@ const signupUser = async (login, password) => {
 };
 
 
-// UI Update Module
-const showErrorMessage = (message, elementId) => {
-    const errorDiv = document.getElementById(elementId);
-    errorDiv.textContent = message;
-    errorDiv.hidden = false;
-};
-
 const redirectToContacts = () => {
     window.location.href = '/contacts.html';
 };
@@ -52,8 +42,11 @@ const redirectToContacts = () => {
 // Event Handlers
 const handleLogin = async (event) => {
     event.preventDefault();
-    let login = document.getElementById("SigninModalLogin").value;
-    let password = document.getElementById("SigninModalPassword").value;
+
+    const modal = document.getElementById("SigninModal");
+
+    let login = modal.querySelector("#SigninModalLogin").value;
+    let password = modal.querySelector("#SigninModalPassword").value;
 
     const validationError = getLoginValidationError(login, password);
     if (validationError) {
@@ -63,14 +56,19 @@ const handleLogin = async (event) => {
 
     login = login.trim(); //trim login
 
-    console.log("Login Attempt:", { login: login, password: password });
+    showSpinner("signinModalSpinner");
+    const buttonTextElement = document.getElementById("signinModalButtonText");
+    const originalButtonText = buttonTextElement.innerHTML;
+    buttonTextElement.innerHTML = "Logging in...";
+    modal.querySelectorAll("button").forEach(button => button.disabled = true);
 
-    try {
+    try {        
         const data = await loginUser(login, password);
 
         if (data.userId && data.error == null) {            
             sessionLogin(data.userId);
             redirectToContacts();
+            return;
         } else if (data.error) {
             showErrorMessage(data.error, "SigninModalError");
         } 
@@ -78,10 +76,16 @@ const handleLogin = async (event) => {
         console.error("Login Error:", error);
         showErrorMessage(error, "SigninModalError");
     }
+
+    hideSpinner("signinModalSpinner");
+    buttonTextElement.innerHTML = originalButtonText;
+    modal.querySelectorAll("button").forEach(button => button.disabled = false);
 };
 
 const handleSignup = async (event) => {
     event.preventDefault();
+
+    const modal = document.getElementById("SignupModal");
 
     let login = document.getElementById("SignupModalLogin").value;
     let password = document.getElementById("SignupModalPassword").value;
@@ -95,7 +99,12 @@ const handleSignup = async (event) => {
     
     login = login.trim(); //trim login
 
-    console.log("Signup Attempt:", { login: login, password: password });
+    showSpinner("signupModalSpinner");
+    const buttonTextElement = document.getElementById("signupModalButtonText");
+    const originalButtonText = buttonTextElement.innerHTML;
+    buttonTextElement.innerHTML = "Creating Account...";
+    modal.querySelectorAll("button").forEach(button => button.disabled = true);
+
 
     try {
         const data = await signupUser(login, password);
@@ -103,6 +112,7 @@ const handleSignup = async (event) => {
         if (data.userId && data.error == null) {
             sessionLogin(data.userId);
             redirectToContacts();
+            return;
         } else if (data.error) {
             showErrorMessage(data.error, "SignupModalError");
         }
@@ -110,10 +120,37 @@ const handleSignup = async (event) => {
         console.error("Signup Error:", error);
         showErrorMessage(error.message, "SignupModalError");
     }
+
+    hideSpinner("signupModalSpinner");
+    buttonTextElement.innerHTML = originalButtonText;
+    modal.querySelectorAll("button").forEach(button => button.disabled = false);
 };
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#exampleModal form").addEventListener("submit", handleLogin);
-    document.querySelector("#SignupModal form").addEventListener("submit", handleSignup);
+    const signinModal = document.getElementById("SigninModal");
+    const signupModal = document.getElementById("SignupModal");
+
+    const signinModalForm = signinModal.querySelector("form");
+    const signupModalForm = signupModal.querySelector("form");
+
+    signinModalForm.addEventListener("submit", handleLogin);
+    signupModalForm.addEventListener("submit", handleSignup);
+
+    //add listener on button "#BtnSignup" to
+    signinModal.querySelector("#BtnSignup").addEventListener("click", function(){
+        signinModal.hidden = true;
+        signupModal.hidden = false;   
+
+        signupModalForm.reset(); 
+        hideErrorMessage("SignupModalError");
+    });
+
+    signupModal.querySelector("#BtnSignin").addEventListener("click", function(){
+        signinModal.hidden = false;
+        signupModal.hidden = true;    
+
+        signinModalForm.reset(); 
+        hideErrorMessage("SigninModalError");
+    });
 });

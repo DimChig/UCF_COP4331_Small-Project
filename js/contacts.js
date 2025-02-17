@@ -344,32 +344,6 @@ document.getElementById("logout").addEventListener("click", function() {
     window.location.href = "/";
 });
 
-function showSpinner(spinnerId) {  
-    const spinner = document.getElementById(spinnerId);
-    if (!spinner) return;    
-    spinner.hidden = false;     
-}
-
-function hideSpinner(spinnerId) {
-    const spinner = document.getElementById(spinnerId);
-    if (!spinner) return;    
-    spinner.hidden = true;     
-}
-
-function showErrorMessage(message, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = message;
-    container.hidden = false;    
-}
-
-function hideErrorMessage(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    container.hidden = true;   
-}
-
 document.querySelector("#addModal form").addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -473,6 +447,9 @@ document.getElementById("confirmDeleteButton").addEventListener("click", async f
 
     // Show loading state for delete button    
     showSpinner("deleteModalSpinner");
+    const buttonTextElement = document.getElementById("deleteModalButtonText");
+    const originalButtonText = buttonTextElement.innerHTML;
+    buttonTextElement.innerHTML = "Deleting...";
     modal.querySelectorAll("button").forEach(button => button.disabled = true);
 
     //execute query "delete"    
@@ -482,7 +459,8 @@ document.getElementById("confirmDeleteButton").addEventListener("click", async f
     await loadContacts(false);
 
     // Hide loading state, clear error messages, and reset the modal
-    hideSpinner("deleteModalSpinner");        
+    hideSpinner("deleteModalSpinner");   
+    buttonTextElement.innerHTML = originalButtonText;     
     modal.querySelectorAll("button").forEach(button => button.disabled = false);
 
     // Hide the delete confirmation modal

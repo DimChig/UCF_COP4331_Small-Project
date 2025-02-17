@@ -83,3 +83,29 @@ function getAddContactValidationError(firstName, lastName, phoneNumber, email) {
 function getUpdateContactValidationError(firstName, lastName, phoneNumber, email) {
     return getAddContactValidationError(firstName, lastName, phoneNumber, email);
 }
+
+function showErrorMessage(message, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = message;
+    container.hidden = false;    
+}
+
+function hideErrorMessage(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    container.hidden = true;   
+}
+
+function showSpinner(spinnerId) {  
+    const spinner = document.getElementById(spinnerId);
+    if (!spinner) return;    
+    spinner.hidden = false;     
+}
+
+function hideSpinner(spinnerId) {
+    const spinner = document.getElementById(spinnerId);
+    if (!spinner) return;    
+    spinner.hidden = true;     
+}

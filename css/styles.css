@@ -2,6 +2,7 @@ body {
     /* background-color: #f8f9fa; */
     background-image: url('../images/background.jpg');
     background-size: cover;
+    background-color: #f0c7f1; /* fallback */
     font-family: 'Open Sans', sans-serif;
 }
 
@@ -36,5 +37,26 @@ a, .btn-link {
     color: #ced4da;
     font-size: 14px;
     text-align: center;
-    cursor: pointer;
+    cursor: pointer;    
 }
+
+.password-eye:hover {
+    color: #b4b9be;
+}
+
+#SigninModal, #SignupModal {
+    /* Set initial state */
+    transform: translateY(-15px);
+    /* Trigger the animation */
+    animation: fadeDown 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeDown {
+    from {
+      transform: translateY(-15px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
