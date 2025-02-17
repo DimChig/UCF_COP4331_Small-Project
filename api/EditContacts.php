@@ -1,8 +1,9 @@
 <?php
-//Daniel Armas API 2
-
 //Connect to database
 require_once("db_connector.php");
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+header("Content-Type: application/json");
 
 //read json data
 $data = json_decode(file_get_contents("php://input"), true);
