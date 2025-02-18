@@ -56,14 +56,8 @@ if ($conn->connect_error) {
     returnWithError("Database connection failed: " . $conn->connect_error);
 }
 
-// check whether or not the connection to the database was successful
-// if not, return an error
-if ($conn->connect_error) {
-    returnWithError("Database connection failed: " . $conn->connect_error);
-}
-
 // if the connection was successful, use the information sent in to create a new user and close the connection.
-else {
+try {
     // set up the line to send
     $statement = $conn->prepare("INSERT INTO users (Login, Password) VALUES(?, ?)");
     // fill in the line with our user's info
@@ -74,19 +68,27 @@ else {
         $userId = $conn->insert_id;
         returnSuccess($userId);
     } else {
-        // check for duplicate entry error (error code 1062)
-        if ($conn->errno === 1062) {
-            returnWithError("User with the same login already exists!");
-        } else {
-            returnWithError("Error registering user: " . $conn->error);
-        }
+        // if execute() returns false, throw an exception
+        throw new Exception("Execute failed: " . $statement->error, $conn->errno);
     }
-
-    // close the statement when finished
-    $statement->close();
-    
-    // close the connection to the database
+} catch (mysqli_sql_exception $e) {
+    // catch MySQLi exceptions
+    if ($e->getCode() == 1062) {
+        returnWithError("User with the same login already exists!");
+    } else {
+        returnWithError("Error registering user: " . $e->getMessage());
+    }
+} catch (Exception $e) {
+    // catch general exceptions
+    if ($e->getCode() == 1062) {
+        returnWithError("User with the same login already exists!");
+    } else {
+        returnWithError("Error registering user: " . $e->getMessage());
+    }
+} finally {
+    if (isset($statement)) {
+        $statement->close();
+    }
     $conn->close();
 }
-
 ?>
