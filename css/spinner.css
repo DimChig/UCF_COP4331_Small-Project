@@ -14,3 +14,7 @@
 button .spinner path {
     fill: white;    
 }
+
+#searchModalSpinner .spinner path {
+    fill: #289ae7;
+}

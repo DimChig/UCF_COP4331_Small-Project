@@ -1,5 +1,5 @@
 // API Calls Module
-const fetchContacts = async () => {
+const fetchContacts = async (searchQuery) => {
     const session = retrieveSession();    
     if (!session || !session.userId) {
         window.location.href = "/";
@@ -7,7 +7,12 @@ const fetchContacts = async () => {
     }
 
     try {                
-        const response = await fetch(`/api/GetAllContacts.php?userId=${session.userId}`);
+        let url = `/api/GetAllContacts.php?userId=${session.userId}`;
+        if (searchQuery && searchQuery.length > 0) {
+        url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        const response = await fetch(url);
+
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
@@ -79,25 +84,53 @@ function formatTimestamp(timestamp) {
     return `${month}/${day}/${year}`;
 }
 
+// took from stackoverflow
+function highlightText(text, searchQuery) {
+    if (!text || !searchQuery || searchQuery.trim() === '') {
+      return text;
+    }
+    
+    // Escape special regex characters from the search query
+    const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Create a regex pattern that allows an optional hyphen between each character
+    const pattern = escapedQuery.split('').join('-?');
+    
+    // Create a global, case-insensitive regex with the pattern
+    const regex = new RegExp(`(${pattern})`, 'gi');
+    
+    // Replace each match with the highlighted span
+    return text.replace(regex, `<span class="searchHighlight">$1</span>`);
+  }
+
 // UI Update Module
-const renderContacts = (contacts) => {
+const renderContacts = (contacts, searchQuery) => {
     const tableLayout = document.getElementById("contacts-table-layout");
     const tableBody = document.getElementById("contacts-table-body");
     const noContactsMessage = document.getElementById("no-contacts-message");
+    
+    const noSearchResultsFound = document.getElementById("no-search-results-message");
+    noSearchResultsFound.hidden = true;
 
     // Clear the table before rendering new contacts
     tableBody.innerHTML = '';
 
     //hide/add container with " No Contacts Message"
     if (contacts.length === 0) {        
-        noContactsMessage.hidden = false;
+        if (!searchQuery) {
+            tableLayout.classList.add("d-none");
+            noContactsMessage.hidden = false;
+        } else {
+            noSearchResultsFound.hidden = false;
+        }
         return;
     } 
     tableLayout.classList.remove("d-none");
     noContactsMessage.hidden = true;
+    
 
     //buttons
-    const updateButton = '<button type="button" class="btn-update btn text-primary"><i class="fa fa-gear" aria-hidden="true"></i></button>';
+    const updateButton = '<button type="button" class="btn-update btn text-contacts"><i class="fa fa-gear" aria-hidden="true"></i></button>';
     const deleteButton = '<button type="button" class="btn-delete btn text-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>';
 
     //loop over contacts to create table rows
@@ -107,26 +140,30 @@ const renderContacts = (contacts) => {
         //set data attribute for the contact id
         row.setAttribute("data-contact-id", contact.contactId);
 
-        const name = contact.firstName + " " + contact.lastName;
+        let name = contact.firstName + " " + contact.lastName;
         let initials = "";
         if (contact.firstName && contact.lastName) {
             initials = (contact.firstName[0] + contact.lastName[0]).toUpperCase();
         }
+
+        let highlightedName = highlightText(name, searchQuery);
+        let phoneNumber = highlightText(formatPhoneNumber(contact.phoneNumber), searchQuery);
+        let email = highlightText(contact.email, searchQuery);
 
         const avatarAndName = 
         `<div class="d-flex align-items-center">
             <div class="avatar me-2" style="background-color: ${getAvatarColor(name)}!important">
                 ${initials}
             </div>
-            ${name}
+            ${highlightedName}
         </div>`;
 
         //that speak for itself
         row.innerHTML = `
             <td scope="row">${index + 1}</td>
             <td>${avatarAndName}</td>
-            <td>${formatPhoneNumber(contact.phoneNumber)}</td>
-            <td>${contact.email ? `<a href="mailto:${contact.email}">${contact.email}</a>` : ""}</td>
+            <td>${phoneNumber}</td>
+            <td>${email ? `<a href="mailto:${contact.email}">${email}</a>` : ""}</td>
             <td>${contact.dateCreated ? formatTimestamp(contact.dateCreated) : ""}</td>
             <td><div class="d-flex">${updateButton}${deleteButton}</div></td>            
         `;
@@ -219,14 +256,18 @@ const loadContacts = async (isShowSpinner) => {
 
     try {              
         //await new Promise(resolve => setTimeout(resolve, 1000)); //for testing
-        const contacts = await fetchContacts();
+        const searchQuery = getSearchQuery();
+        const contacts = await fetchContacts(searchQuery);
         window.contactsList = contacts; //save
-        renderContacts(contacts);
+        renderContacts(contacts, searchQuery);
+        hideSpinner("contactTableSpinner");
+        return true;
     } catch (error) {
         showErrorMessage("<b>Failed to load contacts</b><br>\n" + error, "ShowContactsError");        
     }
 
     hideSpinner("contactTableSpinner");
+    return false;
 };
 
 
@@ -475,3 +516,49 @@ document.getElementById("confirmDeleteButton").addEventListener("click", async f
         selectedContactId = null;
     }
 });
+
+function getSearchQuery() {
+    const form = document.querySelector("#searchForm form");
+    if (!form) return null;
+    const searchInput = form.querySelector("input");
+    if (!searchInput) return null;    
+    const searchQuery = searchInput.value;
+    if (!searchQuery || searchQuery.length == 0) return null;
+    return searchQuery;
+}
+
+async function handleSearchInput() {
+    const form = document.querySelector("#searchForm form");
+    const searchButton = form.querySelector("button");
+    if (!searchButton) return null;
+
+    // Show loading
+    showSpinner("searchModalSpinner");
+    const buttonTextElement = searchButton.querySelector("span");
+    buttonTextElement.innerHTML = "Searching...";
+    searchButton.disabled = true;
+    
+    const isSuccess = await loadContacts(false);    
+
+    // Hide loading
+    hideSpinner("searchModalSpinner");
+    buttonTextElement.innerHTML = "Search";
+    searchButton.disabled = false;
+}
+
+document.querySelector("#searchForm form").addEventListener("submit", async function(event) {
+    event.preventDefault();        
+
+    await handleSearchInput();
+});
+
+
+
+let debounceTimer;
+document.querySelector("#searchForm form input").addEventListener("input", function (event) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    handleSearchInput();
+  }, 200);
+});
+  

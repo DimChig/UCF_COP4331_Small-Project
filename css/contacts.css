@@ -33,16 +33,11 @@ body {
     width: auto;
 }
 
-#logout:hover {
-    background-color: #277cf9;   
-    border-color: #00000000;
-}
-
 .btn-update i, .btn-delete i {
     transition: 0.5s ease-in-out;
 }
 .btn-update:hover i {
-    color: #277cf9;
+    color: #248bd0;
     transform: rotate(90deg);
 }
 
@@ -85,4 +80,40 @@ th, td {
 th {
     border-bottom-color: #eee !important;
     border-bottom-width: initial !important;
+}
+
+.bg-contacts, #logout {
+    background-color: #289ae7;
+}
+
+#logout {
+    border: none;
+}
+
+#logout:hover {
+    background-color: #248bd0;   
+}
+
+.text-contacts {
+    color: #289ae7;
+}
+
+.btn-outline-contacts {
+    color: #289ae7;
+    border-color: #289ae7;
+}
+
+.btn-outline-contacts:hover {
+    color: #fff;
+    border-color: #248bd0;
+    background-color: #248bd0;
+}
+
+.btn-outline-contacts:hover path {
+    fill: white;
+}
+
+.searchHighlight {
+    background: #fffe82;
+    border-radius: 4px;
 }

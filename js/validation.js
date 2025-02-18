@@ -101,11 +101,14 @@ function hideErrorMessage(containerId) {
 function showSpinner(spinnerId) {  
     const spinner = document.getElementById(spinnerId);
     if (!spinner) return;    
-    spinner.hidden = false;     
+    spinner.classList.add("d-flex");    
+    spinner.classList.remove("d-none");    
+      
 }
 
 function hideSpinner(spinnerId) {
     const spinner = document.getElementById(spinnerId);
-    if (!spinner) return;    
-    spinner.hidden = true;     
+    if (!spinner) return;           
+    spinner.classList.remove("d-flex");    
+    spinner.classList.add("d-none");  
 }

@@ -23,6 +23,7 @@ function returnWithError($err) {
 
 // get userId from either GET request query
 $userID = isset($_GET["userId"]) ? intval($_GET["userId"]) : null;
+$search = isset($_GET["search"]) ? $_GET["search"] : "";
 
 // validate that userId exists
 if (!$userID) {
@@ -38,10 +39,28 @@ if ($conn->connect_error) {
 }
 
 //otherwise, perform logic
-else {
-    // prepare SQL statement
-    $stmt = $conn->prepare("SELECT `ID`, `FirstName`, `LastName`, `Phone`, `Email`, `DateCreated` FROM `contacts` WHERE `UserID` = ?");
-    $stmt->bind_param("i", $userID);
+else {    
+    if ($search && !empty($search)) {
+        // Create search pattern for partial matching
+        $searchLike = "%" . $search . "%";
+        // Prepare sql        
+        $stmt = $conn->prepare("SELECT `ID`, `FirstName`, `LastName`, `Phone`, `Email`, `DateCreated` 
+                                FROM `contacts` 
+                                WHERE `UserID` = ? AND 
+                                      ( `FirstName` LIKE ? OR 
+                                        `LastName` LIKE ? OR 
+                                        `Phone` LIKE ? OR 
+                                        `Email` LIKE ? OR 
+                                        CONCAT(`FirstName`, ' ', `LastName`) LIKE ? )");
+        $stmt->bind_param("isssss", $userID, $searchLike, $searchLike, $searchLike, $searchLike, $searchLike);
+    } else {
+        // No search term provided: retrieve all contacts for the user
+        $stmt = $conn->prepare("SELECT `ID`, `FirstName`, `LastName`, `Phone`, `Email`, `DateCreated` 
+                                FROM `contacts` 
+                                WHERE `UserID` = ?");
+        $stmt->bind_param("i", $userID);
+    }
+    
     $stmt->execute();
     $result = $stmt->get_result();
 
